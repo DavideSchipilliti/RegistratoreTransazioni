@@ -2,6 +2,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RegistratoreTransazioni {
+
+	//possibili modifiche: mettere tasso commisione in TipoTransazione e rendero di tipo Valore in modo da poterla avere di diverse Valute
+	private static final double TASSO_COMMISSIONE_PRELIEVO=0.01;
+	private static final double TASSO_COMMISSIONE_VERSAMENTO=0.02;
+
 	private List<TransazioneEconomica> sequenzaTransazioni;
 	private Valore saldo;
 	
@@ -12,16 +17,24 @@ public class RegistratoreTransazioni {
 	
 	public void addTransazione(TransazioneEconomica t) {
 		this.sequenzaTransazioni.add(t);
-		double totale= this.saldo.getImporto();
-		double conversione= t.getValore().converti(this.saldo.getValuta());
+		double saldo= this.saldo.getImporto();
+		double valoreTransazione= t.getValore().converti(this.saldo.getValuta());
 		
-		if(t.getTipoTransazione().equals(TipoTransazione.VERSAMENTO)) {
-			totale+= conversione;
-		} else if(t.getTipoTransazione().equals(TipoTransazione.PRELIEVO)) {
-			totale-= conversione;
+		double commissione=0;
+		
+		switch(t.getTipoTransazione()) {
+		case VERSAMENTO:
+			commissione=valoreTransazione*TASSO_COMMISSIONE_VERSAMENTO;
+			saldo+= valoreTransazione-commissione;
+			break;
+		case PRELIEVO:
+			commissione=valoreTransazione*TASSO_COMMISSIONE_PRELIEVO;
+			saldo-= valoreTransazione-commissione;
+			break;
 		}
-		
- 		this.saldo.setImporto(totale);
+
+		t.setCommissione(commissione);
+ 		this.saldo.setImporto(saldo);
 	}
 
 	public List<TransazioneEconomica> getSequenzaTransazioni() {
